@@ -54,6 +54,7 @@ dkms.conf
 .cproject
 .project
 
+#r2d2
 .settings
 Debug
 .launch
