@@ -1,0 +1,32 @@
+Glosario: *trabajo = es una vuelta;
+
+Protocolo de comunicacion: obiwan-r2d2/ r2d2-obiwan::  struct{uint8_t tipo; uint16_t cant_bytes; unit8_t arr_bytes[]}
+typedef struct{ uint8_t cant_bloques; uint16_taltura_mm; int msm} mensaje_de_cuenta_t;
+typedef struct[]{uint8_t cant_trabajo; uint16_taltura_mm; } rutina ;
+
+#define MENSAJE_DE_CUENTA 1 // parte del tipo de mensaje
+------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------
+r2d2-obiwan
+//primero se lee esto: 
+		mensaje.tipo = MENSAJE_DE_CUENTA;
+		mensaje.cant_bytes = sizeof( mensaje_de_cuenta_t );
+		mensaje.arr_bytes = mensaje_de_cuenta_t buffer;
+
+
+//obiwan responde:
+#define MENSAJE_DE_RESPUESTA 2;
+		mensaje.tipo = MENSAJE_DE_RESPUESTA;
+		mensaje.cant_bytes = variable;
+		mensaje.arr_bytes = [rutina];
+//cuando r2d2 termina:
+#define MENSAJE_ACK 3;
+		mensaje.tipo= define MENSAJE_ACK 3;
+		mensaje.cant_bytes = sizeof(uint8_t);
+		mensaje.arr_bytes= //false o true
+
+
+
+

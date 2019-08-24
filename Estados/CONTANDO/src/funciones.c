@@ -128,7 +128,7 @@ void funcion_iniciar (void)
 
 	if((pulsadorFinVuelta()==1) && (pulsadorFinTecho()==1) )
 	{
-		//motorBase(OFF);
+		motorBase(OFF);
 		motorTorre(OFF);
 		LCD_Display("Calibrado",LINE_1, 0);
 		estado = CONTAR ;
@@ -154,8 +154,7 @@ void funcion_contar (void)
 		LCD_Display("contando...",LINE_1, 0);
 
 
-
-	if((pulsadorFinVuelta()==1) )
+	if((pulsadorFinVuelta()==1 && pulsadorFinTecho() != 1) )
 	{
 		 estado = ENVIAR ;
 		 detenerRelaysAll();
