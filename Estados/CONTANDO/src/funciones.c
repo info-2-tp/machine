@@ -11,14 +11,9 @@
 extern int estado ;
 
 #include "funciones.h"
-#include <DR_Infotronic.h>
-#include <PR_Entradas.h>
-#include <PR_lcd.h>
-#include <PR_Relays.h>
-#include <PR_Teclado.h>
 
 
-void (*arrayFunciones[])(void) = {funcion_iniciar,funcion_contar,funcion_enviar};
+void (*arrayFunciones[])(void) = {funcion_iniciar,funcion_cargar,funcion_contar,funcion_enviar};
 //Funciones asociadas a los eventos
 
 /**
@@ -50,12 +45,7 @@ int pulsadorFinVuelta(void)
 */
 void sensorDistancia(int modo)
 {
-	if(modo==ON){
-		Relays(RELAY0,ON);
-	}
-	else{
-		Relays(RELAY0,OFF);
-	}
+	Relays(SENSOR, modo);
 }
 
 /**
@@ -67,10 +57,10 @@ void sensorDistancia(int modo)
 */
 void detenerRelaysAll(void)
 {
-	Relays(RELAY0,OFF);//sensor
-	Relays(RELAY1,OFF);//motor base
-	Relays(RELAY2,OFF);//motor torre
-	Relays(RELAY3,OFF);//motor cuchilla
+	Relays(SENSOR,OFF);//sensor
+	Relays(MOTOR_BASE,OFF);//motor base
+	Relays(MOTOR_TORRE,OFF);//motor torre
+	Relays(MOTOR_CUCHILLA,OFF);//motor cuchilla
 }
 
 /**
@@ -85,8 +75,8 @@ void inicioConteoBloques(void)
 	//imprimir que empiezo
 	//empiezo a mover la base
 	//empiezo a mover la torre
-	Relays(RELAY1,ON);//motor base
-	Relays(RELAY2,ON);//motor torre
+	Relays(MOTOR_BASE,ON);//motor base
+	Relays(MOTOR_TORRE,ON);//motor torre
 }
 
 /**
@@ -98,21 +88,22 @@ void inicioConteoBloques(void)
 */
 void motorBase(int modo)
 {
-	if(modo==ON){
-		Relays(RELAY1,ON);
-	}
-	else{
-		Relays(RELAY1,OFF);
-	}
+	Relays(MOTOR_BASE,modo);
 }
+
 void motorTorre(int modo)
 {
-	if(modo==ON){
-		Relays(RELAY2,ON);
+	Relays(MOTOR_TORRE,modo);
+}
+char boton_ok (void){
+	char orden;
+	if(GetKey() == PULSADOR_INICIAR){
+		orden=TRUE;
 	}
 	else{
-		Relays(RELAY2,OFF);
+		orden=FALSE;
 	}
+	return orden;
 }
 
 //funciones para la maquina
@@ -122,23 +113,21 @@ void motorTorre(int modo)
 
 void funcion_iniciar (void)
 {
+	LCD_Display("R2D2",FIRST_LINE, 0);
+	LCD_Display("Estado: INICIAR",SECOND_LINE, 0);
 
-		LCD_Display("R2D2",LINE_0, 0);
-		LCD_Display("Estado: INICIAR",LINE_1, 0);
-
-	if((pulsadorFinVuelta()==1) && (pulsadorFinTecho()==1) )
+	if(pulsadorFinVuelta() && pulsadorFinTecho() )
 	{
-		motorBase(OFF);
-		motorTorre(OFF);
-		LCD_Display("Calibrado",LINE_1, 0);
-		estado = CONTAR ;
-		//motorBase(ON);
-		sensorDistancia(ON);
+		detenerRelaysAll();
+		LCD_Display("Calibrado",SECOND_LINE, 0);
+		estado = CARGAR ;
+
+
 	}
 
-	if((pulsadorFinTecho()==0) && (pulsadorFinVuelta()==0) )
+	if(!pulsadorFinTecho() && !pulsadorFinVuelta() )
 	{
-			LCD_Display("Calibrando...",LINE_1, 0);
+		LCD_Display("Calibrando...",SECOND_LINE, 0);
 
 		motorBase(ON);
 		motorTorre(ON);
@@ -148,10 +137,26 @@ void funcion_iniciar (void)
 	}
 
 }
+
+void funcion_cargar(void){
+	LCD_Display("Estado: CARGAR",FIRST_LINE, 0);
+	LCD_Display("CARGUE CUBOS",SECOND_LINE, 0);
+
+	if(boton_ok()== TRUE){
+		estado = CONTAR ;
+		motorBase(ON);
+		sensorDistancia(ON);
+	}
+	else{
+		detenerRelaysAll();
+	}
+
+
+}
 void funcion_contar (void)
 {
-		LCD_Display("Estado: CONTAR",LINE_0, 0);
-		LCD_Display("contando...",LINE_1, 0);
+		LCD_Display("Estado: CONTAR",FIRST_LINE, 0);
+		LCD_Display("contando...",SECOND_LINE, 0);
 
 
 	if((pulsadorFinVuelta()==1 && pulsadorFinTecho() != 1) )
@@ -160,18 +165,15 @@ void funcion_contar (void)
 		 detenerRelaysAll();
 	}
 
-	if((pulsadorFinVuelta()==0) )
-	{
-		//sensorDistancia(ON);
+	else{
 		 estado = CONTAR ;
-
 	}
 
 }
 void funcion_enviar (void)
 {
-		LCD_Display("Estado: ENVIAR",LINE_0, 0);
-		LCD_Display("Enviando... 10",LINE_1, 0);
+		LCD_Display("Estado: ENVIAR",FIRST_LINE, 0);
+		LCD_Display("Enviando... 10",SECOND_LINE, 0);
 
 	if( pulsadorFinTecho() == 1  )
 	{

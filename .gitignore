@@ -51,10 +51,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-.cproject
-.project
+*.cproject
+*.project
 
 #r2d2
-.settings
-Debug
-.launch
+*.settings
+*Debug
+*.launch
