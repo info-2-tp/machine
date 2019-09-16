@@ -13,6 +13,7 @@
 #include <PR_lcd.h>
 #include <PR_Relays.h>
 #include <PR_Teclado.h>
+#include <PR_UART.h>
 
 //Declaracion de constantes
 #define TRUE  1

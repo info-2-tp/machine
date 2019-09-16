@@ -1,14 +1,16 @@
 /**
-*	\file funciones.c
-*	\brief
-*	\details Descripcion detallada del archivo
-*	\author EduardoMaticorena
-*	\date 24-08-2019 17:07:26
-*/
+ *	\file funciones.c
+ *	\brief
+ *	\details Descripcion detallada del archivo
+ *	\author EduardoMaticorena
+ *	\date 24-08-2019 17:07:26
+ */
 
 
 
 extern int estado ;
+extern char lectura ;
+extern int esta_lcd ;
 
 #include "funciones.h"
 
@@ -17,12 +19,12 @@ void (*arrayFunciones[])(void) = {funcion_iniciar,funcion_cargar,funcion_contar,
 //Funciones asociadas a los eventos
 
 /**
-*	\fn int pulsador_fin_techo(void)
-*	\brief Resumen
-*	\details Detalles
-*	\author EduardoMaticorena
-*	\date 24-08-2019 17:07:26
-*/
+ *	\fn int pulsador_fin_techo(void)
+ *	\brief Resumen
+ *	\details Detalles
+ *	\author EduardoMaticorena
+ *	\date 24-08-2019 17:07:26
+ */
 int pulsadorFinTecho(void)
 {
 	return LeerEntrada(ENTRADA0);
@@ -37,24 +39,24 @@ int pulsadorFinVuelta(void)
 //Funciones asociadas a las acciones
 
 /**
-*	\fn void sensorDistancia(void)
-*	\brief Resumen
-*	\details Detalles
-*	\author EduardoMaticorena
-*	\date 24-08-2019 17:07:26
-*/
+ *	\fn void sensorDistancia(void)
+ *	\brief Resumen
+ *	\details Detalles
+ *	\author EduardoMaticorena
+ *	\date 24-08-2019 17:07:26
+ */
 void sensorDistancia(int modo)
 {
 	Relays(SENSOR, modo);
 }
 
 /**
-*	\fn void detenerRelaysAll(void)
-*	\brief Resumen
-*	\details Detalles
-*	\author EduardoMaticorena
-*	\date 24-08-2019 17:07:26
-*/
+ *	\fn void detenerRelaysAll(void)
+ *	\brief Resumen
+ *	\details Detalles
+ *	\author EduardoMaticorena
+ *	\date 24-08-2019 17:07:26
+ */
 void detenerRelaysAll(void)
 {
 	Relays(SENSOR,OFF);//sensor
@@ -64,12 +66,12 @@ void detenerRelaysAll(void)
 }
 
 /**
-*	\fn void inicioConteoBloques(void)
-*	\brief Resumen
-*	\details Detalles
-*	\author EduardoMaticorena
-*	\date 24-08-2019 17:07:26
-*/
+ *	\fn void inicioConteoBloques(void)
+ *	\brief Resumen
+ *	\details Detalles
+ *	\author EduardoMaticorena
+ *	\date 24-08-2019 17:07:26
+ */
 void inicioConteoBloques(void)
 {
 	//imprimir que empiezo
@@ -80,12 +82,12 @@ void inicioConteoBloques(void)
 }
 
 /**
-*	\fn void motorBase(void)
-*	\brief Resumen
-*	\details Detalles
-*	\author EduardoMaticorena
-*	\date 24-08-2019 17:07:26
-*/
+ *	\fn void motorBase(void)
+ *	\brief Resumen
+ *	\details Detalles
+ *	\author EduardoMaticorena
+ *	\date 24-08-2019 17:07:26
+ */
 void motorBase(int modo)
 {
 	Relays(MOTOR_BASE,modo);
@@ -113,13 +115,16 @@ char boton_ok (void){
 
 void funcion_iniciar (void)
 {
-	LCD_Display("R2D2",FIRST_LINE, 0);
-	LCD_Display("Estado: INICIAR",SECOND_LINE, 0);
-
+	if(esta_lcd != INICIAR){
+		esta_lcd=INICIAR;
+		LCD_Display("                    ",FIRST_LINE, 0);
+		LCD_Display("                    ",SECOND_LINE, 0);
+		LCD_Display("R2D2 XD",FIRST_LINE, 0);
+		LCD_Display("Estado: INICIAR",SECOND_LINE, 0);
+	}
 	if(pulsadorFinVuelta() && pulsadorFinTecho() )
 	{
 		detenerRelaysAll();
-		LCD_Display("Calibrado",SECOND_LINE, 0);
 		estado = CARGAR ;
 
 
@@ -127,21 +132,26 @@ void funcion_iniciar (void)
 
 	if(!pulsadorFinTecho() && !pulsadorFinVuelta() )
 	{
-		LCD_Display("Calibrando...",SECOND_LINE, 0);
 
 		motorBase(ON);
 		motorTorre(ON);
 
-		 estado = INICIAR ;
+		estado = INICIAR ;
 
 	}
 
 }
 
 void funcion_cargar(void){
-	LCD_Display("Estado: CARGAR",FIRST_LINE, 0);
-	LCD_Display("CARGUE CUBOS",SECOND_LINE, 0);
 
+	if(esta_lcd!= CARGAR){
+		//imprime el mensaje
+		esta_lcd = CARGAR;
+		LCD_Display("                    ",FIRST_LINE, 0);
+		LCD_Display("                    ",SECOND_LINE, 0);
+		LCD_Display("Estado: CONTAR",FIRST_LINE, 0);
+		LCD_Display("Sub-estado:CARGAR",SECOND_LINE, 0);
+	}
 	if(boton_ok()== TRUE){
 		estado = CONTAR ;
 		motorBase(ON);
@@ -155,30 +165,41 @@ void funcion_cargar(void){
 }
 void funcion_contar (void)
 {
-		LCD_Display("Estado: CONTAR",FIRST_LINE, 0);
-		LCD_Display("contando...",SECOND_LINE, 0);
-
+	if(esta_lcd!= CONTAR){
+			//imprime el mensaje
+			esta_lcd = CONTAR;
+			LCD_Display("                    ",FIRST_LINE, 0);
+			LCD_Display("                    ",SECOND_LINE, 0);
+			LCD_Display("Estado: CONTAR",FIRST_LINE, 0);
+			LCD_Display("Sub-estado: CONTAR",SECOND_LINE, 0);
+		}
 
 	if((pulsadorFinVuelta()==1 && pulsadorFinTecho() != 1) )
 	{
-		 estado = ENVIAR ;
-		 detenerRelaysAll();
+		estado = ENVIAR ;
+		detenerRelaysAll();
 	}
 
 	else{
-		 estado = CONTAR ;
+		estado = CONTAR ;
 	}
 
 }
 void funcion_enviar (void)
 {
-		LCD_Display("Estado: ENVIAR",FIRST_LINE, 0);
-		LCD_Display("Enviando... 10",SECOND_LINE, 0);
-
+	if(esta_lcd != ENVIAR){
+		esta_lcd = ENVIAR;
+		LCD_Display("                    ",FIRST_LINE, 0);
+		LCD_Display("                    ",SECOND_LINE, 0);
+		LCD_Display("Estado: CONTAR",FIRST_LINE, 0);
+		LCD_Display("Sub-estado:ENVIAR",SECOND_LINE, 0);
+	}
 	if( pulsadorFinTecho() == 1  )
 	{
-		 estado = INICIAR ;
-		 inicioConteoBloques();
+
+		Transmitir(0, &lectura, 1);
+		estado = INICIAR ;
+		inicioConteoBloques();
 	}
 
 }
@@ -187,12 +208,12 @@ void funcion_enviar (void)
 //Maquina de estado mediante vector de ptr a funcion
 
 /**
-*	\fn void maquina_estado()
-*	\brief Resumen
-*	\details Detalles
-*	\author EduardoMaticorena
-*	\date 24-08-2019 17:07:26
-*/
+ *	\fn void maquina_estado()
+ *	\brief Resumen
+ *	\details Detalles
+ *	\author EduardoMaticorena
+ *	\date 24-08-2019 17:07:26
+ */
 void maquina_estado()
 {
 

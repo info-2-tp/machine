@@ -23,15 +23,16 @@
 
 // TODO: insert other definitions and declarations here
 int estado = INICIAR;
-
-//void (*arrayFunciones[])(void) = {funcion_iniciar,funcion_contar,funcion_enviar};
+char lectura = 1;
+int esta_lcd = -1;
 
 int main(void) {
+
 	Inicializacion();
-	Display(0,1);
+
 	while(1)
 		{
-
+			Display(2,0);
 			maquina_estado();
 
 		}
