@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <PR_Relays.h>
+#include "headers/timer.h"
 
 #define ON 1
 #define OFF 0
@@ -29,11 +30,10 @@
 int main(void) {
 
 	Inicializacion();
-	//InicializarRGB( );
+	init_timer();
 
     printf("Hola mundo\n");
 
-    Relays(MOTOR_BASE,ON);
 
     // Force the counter to be placed into memory
     volatile static int i = 0 ;
