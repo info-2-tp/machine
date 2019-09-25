@@ -68,6 +68,10 @@ typedef struct
 
 #define PRESCALE_FOR_1_US 25	//Prescaler puesto a 25 para que el clock sea de a 1 microsegundo
 
+typedef void (*Timer_Closure)(void);
+
 void init_timer(void);
+
+void set_timer(uint32_t time,Timer_Closure handler );
 
 #endif //TIMER_DRIVER_V0_1_0_H_

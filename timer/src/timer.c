@@ -13,7 +13,13 @@
 
 #define MOTOR_BASE 1
 
+typedef struct s_timer_handler_t{
+	uint32_t time;
+	Timer_Closure handler;
+}timer_handler_t;
+
 uint8_t flag = 0;
+
 /**
  * Prendo los bits del timer 0 y apago los de los timers 1/2/3
  */
@@ -31,30 +37,42 @@ void select_clock_speed() {
 	T_PR = PRESCALE_FOR_1_US;
 }
 
-void prepare_interrupts() {
-	T_MCR |= 3;				// Genera una interrupcion cuando MC0 Matchea,  Resetea el TC cuando MC0 Matchea
+void close_timer() {
 	T_TCR &= ~(1);	   // Apago  el temporizador,poniendo un cero en el bit 0 Pag 494
-	T_TCR |= 1<<1;    //  Resteo el temporizador , prendiendo el bit 1
+}
 
+void open_timer(uint32_t time) {
+	T_MR0 = time;
+	T_TCR |= 1<<1;    //  Resteo el temporizador , prendiendo el bit 1
 	T_TCR &= ~(1 << 1);// Apago el bit 1 de RESET
 	T_TCR |= 1;        // Enciendo el temporizador poniendo el bit 0 de ENABLE en 1
+}
 
+void prepare_interrupts() {
+	T_MCR |= 3;				// Genera una interrupcion cuando MC0 Matchea,  Resetea el TC cuando MC0 Matchea
 	ISE_TIMER; 	// Habilito interrupcion del Timer0 en el vector de interrupciones.
 }
 
 void init_timer(void) {
-	T_MR0 = 5000000;
 	power_up();
 	select_clock_speed();
 	prepare_interrupts();
+	close_timer();
+}
+
+timer_handler_t timer_handler;
+
+void set_timer(uint32_t time,Timer_Closure handler) {
+	timer_handler.time = time;
+	timer_handler.handler = handler;
+	open_timer(timer_handler.time);
 }
 
 void TIMER0_IRQHandler(void) {
 	if(T_IR_MR0) {	 // Interrumpio por match 0 ?
 		T_IR |= 0x01;
-		printf("Interrumpio jojo\n");
-		flag = (flag+1)%2;
-		Relays(MOTOR_BASE, flag);
+		close_timer();
+		timer_handler.handler();
 	}
 }
 
