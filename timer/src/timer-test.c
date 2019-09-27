@@ -29,11 +29,13 @@
 
 void close_motor() {
 	Relays(MOTOR_BASE, OFF);
+    printf("Pasaron %ius\n", get_clock());
 }
 
 void open_motor() {
 	Relays(MOTOR_BASE, ON);
 	set_timer(3000000, close_motor);
+    printf("Pasaron %ius\n", get_clock());
 }
 
 int main(void) {
@@ -43,6 +45,7 @@ int main(void) {
 
     printf("Hola mundo\n");
     set_timer(1000000, open_motor);
+    printf("Pasaron %ius\n", get_clock());
 
     // Force the counter to be placed into memory
     volatile static int i = 0 ;
