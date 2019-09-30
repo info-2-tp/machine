@@ -38,6 +38,9 @@ typedef struct
 //0x40004000UL : Direccion de inicio de los registros del Timer1
 #define	DIR_TIMER_1	( ( timer_t  * ) 0x40008000UL )
 
+#define TC_1_P ((uint32_t*) 0x40008008UL)
+#define TC_1 TC_1_P[0]
+
 #define	TIMER_0	DIR_TIMER_0[0]
 #define	TIMER_1	DIR_TIMER_1[0]
 

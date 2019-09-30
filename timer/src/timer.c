@@ -72,8 +72,7 @@ void set_timer(uint32_t time,Timer_Closure handler) {
 }
 
 uint32_t get_clock() {
-	timer_t t = TIMER_1;
-	return T1_TC;
+	return TC_1;
 }
 
 void TIMER0_IRQHandler(void) {
