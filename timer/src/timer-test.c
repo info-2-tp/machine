@@ -15,35 +15,40 @@
 #include <cr_section_macros.h>
 
 #include <stdio.h>
-#include <PR_Relays.h>
 #include "headers/DR_timer.h"
+#include "headers/PR_timer.h"
 
-#define ON 1
-#define OFF 0
-
-#define MOTOR_BASE 1
-
-// TODO: insert other include files here
-
-// TODO: insert other definitions and declarations here
-
-void close_motor() {
-	//Relays(MOTOR_BASE, OFF);
-    printf("Pasaron %ius\n", get_clock());
+void step1() {
+	printf("step 1, Pasaron %ius\n", get_clock());
 }
 
-void open_motor() {
-	//Relays(MOTOR_BASE, ON);
-	set_timer_from_now(3000000, close_motor);
-    printf("Pasaron %ius\n", get_clock());
+void step3() {
+	printf("step 3, Pasaron %ius\n", get_clock());
+}
+
+void step4() {
+	printf("step 4, Pasaron %ius\n", get_clock());
+}
+
+void step2() {
+	printf("step 2, Pasaron %ius\n", get_clock());
+    startTimer(1, step3, SECONDS);
+    startTimer(4, step4, SECONDS);
+}
+
+void step0() {
+	printf("step 0, Pasaron %ius\n", get_clock());
+    startTimer(5, step1, SECONDS);
+    startTimer(2, step2, SECONDS);
 }
 
 int main(void) {
 
-	init_timer();
+	initTimer();
 
-    printf("Hola mundo\n");
-    set_timer_from_now(1000000, open_motor);
+    printf("Hola Mundo!!\n");
+
+    startTimer(1, step0, SECONDS);
     printf("Pasaron %ius\n", get_clock());
 
     // Force the counter to be placed into memory

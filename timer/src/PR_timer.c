@@ -44,7 +44,7 @@ void initTimer() {
 	init_timer();
 }
 
-uint8_t startTimer(uint32_t time, Timer_Closure handler , uint8_t base ) {
+uint8_t startTimer(uint32_t time, Timer_Handler handler , uint8_t base ) {
     pr_timer_t timer = timers[current_descriptor];
 	timer.time = time;
     timer.handler = handler;
