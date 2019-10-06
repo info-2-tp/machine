@@ -28,19 +28,18 @@
 // TODO: insert other definitions and declarations here
 
 void close_motor() {
-	Relays(MOTOR_BASE, OFF);
+	//Relays(MOTOR_BASE, OFF);
     printf("Pasaron %ius\n", get_clock());
 }
 
 void open_motor() {
-	Relays(MOTOR_BASE, ON);
+	//Relays(MOTOR_BASE, ON);
 	set_timer_from_now(3000000, close_motor);
     printf("Pasaron %ius\n", get_clock());
 }
 
 int main(void) {
 
-	Inicializacion();
 	init_timer();
 
     printf("Hola mundo\n");
