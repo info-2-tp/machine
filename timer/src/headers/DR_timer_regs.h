@@ -58,6 +58,7 @@ typedef struct
 
 #define		T0_TCR		TIMER_0.TCR
 #define		T0_PC		TIMER_0.PC
+#define		T0_TC		TIMER_0.TC
 #define		T0_PR		TIMER_0.PR
 #define		T0_MCR		TIMER_0.MCR
 #define		T0_MR0		TIMER_0.MR0

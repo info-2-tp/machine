@@ -90,6 +90,10 @@ void select_clock_speed() {
 	T1_PR = PRESCALE_FOR_1_US;
 }
 
+void open_timer_if_closed() {
+	if (!(T0_TCR % 2)) T0_TCR |= 1;
+}
+
 void open_timer() {
 	T0_TCR |= 1;
 }
@@ -129,14 +133,14 @@ void init_timer(void) {
 timer_handler_t timer_handler;
 
 void set_timer(uint32_t time,Timer_Closure handler) {
-	open_timer();
+	open_timer_if_closed();
 	timer_handler.time = time;
 	timer_handler.handler = handler;
 	T0_MR0 = time;
 }
 
 void set_timer_from_now(uint32_t time,Timer_Closure handler) {
-	open_timer();
+	open_timer_if_closed();
 	timer_handler.time = get_timer_clock() + time;
 	timer_handler.handler = handler;
 	T0_MR0 = timer_handler.time;
