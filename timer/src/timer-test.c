@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 #include <PR_Relays.h>
-#include "headers/timer.h"
+#include "headers/DR_timer.h"
 
 #define ON 1
 #define OFF 0
@@ -34,7 +34,7 @@ void close_motor() {
 
 void open_motor() {
 	Relays(MOTOR_BASE, ON);
-	set_timer(3000000, close_motor);
+	set_timer_from_now(3000000, close_motor);
     printf("Pasaron %ius\n", get_clock());
 }
 
@@ -44,7 +44,7 @@ int main(void) {
 	init_timer();
 
     printf("Hola mundo\n");
-    set_timer(1000000, open_motor);
+    set_timer_from_now(1000000, open_motor);
     printf("Pasaron %ius\n", get_clock());
 
     // Force the counter to be placed into memory

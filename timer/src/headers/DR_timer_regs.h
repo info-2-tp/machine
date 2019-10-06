@@ -1,5 +1,5 @@
-#ifndef TIMER_DRIVER_V0_1_0_H_
-#define TIMER_DRIVER_V0_1_0_H_
+#ifndef TIMER_DRIVER_REGS_V0_1_0_H_
+#define TIMER_DRIVER_REGS_V0_1_0_H_
 
 #include <DR_tipos.h>
 
@@ -37,6 +37,9 @@ typedef struct
 #define	DIR_TIMER_0	( ( timer_t  * ) 0x40004000UL )
 //0x40004000UL : Direccion de inicio de los registros del Timer1
 #define	DIR_TIMER_1	( ( timer_t  * ) 0x40008000UL )
+
+#define TC_0_P ((uint32_t*) 0x40004008UL)
+#define TC_0 TC_0_P[0]
 
 #define TC_1_P ((uint32_t*) 0x40008008UL)
 #define TC_1 TC_1_P[0]
@@ -99,12 +102,4 @@ typedef struct
 
 #define PRESCALE_FOR_1_US 24	//Prescaler puesto a 25 - 1 para que el clock sea de a 1 microsegundo
 
-typedef void (*Timer_Closure)(void);
-
-void init_timer(void);
-
-void set_timer(uint32_t time,Timer_Closure handler );
-
-uint32_t get_clock();
-
-#endif //TIMER_DRIVER_V0_1_0_H_
+#endif //TIMER_DRIVER_REGS_V0_1_0_H_
