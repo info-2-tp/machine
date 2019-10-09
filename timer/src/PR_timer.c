@@ -75,10 +75,11 @@ uint8_t modify_timers(uint32_t current_time, uint32_t last_time) {
 	uint32_t min_timer = MAX;
 	uint8_t min_index = 0;
 	for (uint8_t i = 0; i < TIMERS_MAX_SIZE; i++) {
-		if (!timers[i].closed) {
-			timers[i].time-= time;
-			if (timers[i].time < min_timer) {
-				min_timer = timers[i].time;
+		pr_timer_t timer = timers[i];
+		if (!timer.closed) {
+			timer.time-= time;
+			if (timer.time < min_timer) {
+				min_timer = timer.time;
 				min_index = i;
 			}
 		}
