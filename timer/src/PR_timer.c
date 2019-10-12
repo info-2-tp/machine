@@ -12,7 +12,7 @@
 #define MILLISECOND 1000
 #define SECOND 1000*1000
 
-#define MAX = (uint32_t)0xffffff
+#define MAX (uint32_t)0xffffff
 
 #define TIMERS_MAX_SIZE 10
 
@@ -31,6 +31,8 @@ uint8_t current_descriptor = 0;
 uint32_t last_time = 0;
 uint8_t next_timer_descriptor = 0;
 
+void timer_handler_function(void);
+
 void empty_handler() {}
 
 uint32_t base_to_microseconds(uint8_t base) {
@@ -48,11 +50,11 @@ uint32_t timer_in_microseconds(uint32_t time, uint8_t base) {
 
 void init_timer_buffer() {
 	for (uint8_t i = 0; i < TIMERS_MAX_SIZE; i++){
-		pr_timer timer = timers[i];
-		timer.time = 0;
-		timer.handler = empty_handler;
-		timer.base = MICROSECONDS;
-		timer.closed = CLOSED;
+		pr_timer_t* timer = timers + i;
+		timer->time = 0;
+		timer->handler = empty_handler;
+		timer->base = MICROSECONDS;
+		timer->closed = CLOSED;
 	}
 }
 
@@ -61,25 +63,25 @@ void initTimer() {
 	init_timer();
 }
 
-pr_timer initialize_timer(uint8_t descriptor, uint32_t time, Timer_Handler handler , uint8_t base) {
-	pr_timer_t timer = timers[descriptor];
-	timer.time = timer_in_microseconds(time, base);
-	timer.handler = handler;
-	timer.base = base;
-	timer.closed = OPENED;
-	return timer;
+pr_timer_t initialize_timer(uint8_t descriptor, uint32_t time, Timer_Handler handler , uint8_t base) {
+	pr_timer_t* timer = timers + descriptor;
+	timer->time = timer_in_microseconds(time, base);
+	timer->handler = handler;
+	timer->base = base;
+	timer->closed = OPENED;
+	return *timer;
 }
 
 uint8_t modify_timers(uint32_t current_time, uint32_t last_time) {
 	uint32_t time = current_time - last_time;
 	uint32_t min_timer = MAX;
-	uint8_t min_index = 0;
+	uint8_t min_index = TIMERS_MAX_SIZE + 1;
 	for (uint8_t i = 0; i < TIMERS_MAX_SIZE; i++) {
-		pr_timer_t timer = timers[i];
-		if (!timer.closed) {
-			timer.time-= time;
-			if (timer.time < min_timer) {
-				min_timer = timer.time;
+		pr_timer_t* timer = timers + i;
+		if (!timer->closed) {
+			timer->time-= time;
+			if (timer->time < min_timer) {
+				min_timer = timer->time;
 				min_index = i;
 			}
 		}
@@ -87,26 +89,36 @@ uint8_t modify_timers(uint32_t current_time, uint32_t last_time) {
 	return min_index;
 }
 
-uint8_t organize_timers() {
-	uint32_t current_time = get_clock();
+uint8_t organize_timers(uint32_t current_time) {
 	uint8_t next_index = modify_timers(current_time, last_time);
 	last_time = current_time;
 	return next_index;
 }
 
-void activate_next_timer(uint8_t next_descriptor, pr_timer_t timer) {
-	next_timer_descriptor = descriptor;
-	set_timer_from_now(timer_in_microseconds(timer.time), timer.handler);
+void activate_next_timer(uint8_t next_descriptor) {
+	next_timer_descriptor = next_descriptor;
+	pr_timer_t timer = timers[next_descriptor];
+	set_timer_from_now(timer.time, timer_handler_function);
 }
 
 uint8_t startTimer(uint32_t time, Timer_Handler handler , uint8_t base ) {
-	uint8_t next_index = organize_timers();
+	uint8_t next_index = organize_timers(get_clock());
 	pr_timer_t timer = initialize_timer(current_descriptor, time, handler, base);
-	if (timer.time < timers[next_index].time || timers[next_index].closed)
-		activate_next_timer(current_descriptor, timer);
+	if (next_index > TIMERS_MAX_SIZE || timer.time < timers[next_index].time || timers[next_index].closed)
+		activate_next_timer(current_descriptor);
 	else
-		activate_next_timer(next_index, timers[next_index]);
+		activate_next_timer(next_index);
     uint8_t descriptor = current_descriptor;
-    current_descriptoe = (current_descriptor + 1) % TIMERS_MAX_SIZE;
+    current_descriptor = (current_descriptor + 1) % TIMERS_MAX_SIZE;
     return descriptor;
+}
+
+void timer_handler_function() {
+	pr_timer_t* timer = timers + next_timer_descriptor;
+	timer->closed = CLOSED;
+	uint8_t next_index = organize_timers(last_time + timer->time);
+	if (next_index < TIMERS_MAX_SIZE) {
+		activate_next_timer(next_index);
+	}
+	timer->handler();
 }
