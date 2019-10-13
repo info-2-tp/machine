@@ -7,9 +7,9 @@ typedef void (*Timer_Closure)(void);
 
 void init_timer(void);
 
-void set_timer(uint32_t time,Timer_Closure handler );
+void set_timer(uint32_t time,Timer_Closure handler, uint8_t reset);
 
-void set_timer_from_now(uint32_t time,Timer_Closure handler );
+void set_timer_from_now(uint32_t time,Timer_Closure handler, uint8_t reset);
 
 uint32_t get_timer_clock();
 

@@ -10,10 +10,7 @@
 #include "headers/DR_timer_regs.h"
 #include "headers/DR_timer.h"
 
-typedef struct s_timer_handler_t{
-	uint32_t time;
-	Timer_Closure handler;
-}timer_handler_t;
+Timer_Closure _handler;
 
 void init_pLL () {
 	//Este bloque de codigo habilita el oscilador externo como fuente de clk
@@ -127,13 +124,11 @@ void init_timer(void) {
 	start_clock();
 }
 
-timer_handler_t timer_handler;
-
 void set_timer(uint32_t time,Timer_Closure handler) {
 	open_timer();
-	timer_handler.time = time;
-	timer_handler.handler = handler;
+	_handler = handler;
 	T0_MR0 = time;
+	T0_MCR |= 1;
 }
 
 void set_timer_from_now(uint32_t time,Timer_Closure handler) {
@@ -150,9 +145,9 @@ uint32_t get_clock() {
 
 void TIMER0_IRQHandler(void) {
 	if(T0_IR_MR0) {	 // Interrumpio por match 0 ?
+		T0_MCR &= ~(1);
 		T0_IR |= 0x01;
-		close_timer();
-		timer_handler.handler();
+		_handler();
 	}
 }
 

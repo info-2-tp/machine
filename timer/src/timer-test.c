@@ -30,6 +30,7 @@ void step3() {
 
 void step5() {
 	times[5] = get_clock();
+	close_timer();
 	printf("step\n0: %ius\n1: %ius\n2: %ius\n3: %ius\n4: %ius\n5: %ius\n", times[0], times[1], times[2], times[3], times[4], times[5]);
 }
 
@@ -56,9 +57,9 @@ int main(void) {
 
     printf("Hola Mundo!!\n");
 
-    printf("Pasaron %ius\n", get_clock());
-
+    uint32_t init_time =  get_clock();
     startTimer(1, step0, SECONDS);
+    printf("Pasaron %ius\n", init_time);
 
     // Force the counter to be placed into memory
     volatile static int i = 0 ;
