@@ -124,15 +124,24 @@ void init_timer(void) {
 	start_clock();
 }
 
-void set_timer(uint32_t time,Timer_Closure handler) {
+void set_timer(uint32_t time,Timer_Closure handler, uint8_t reset) {
+	if (reset) T0_MCR |= 1 << 1; else T0_MCR &= ~(1 << 1);
+	T0_MCR |= 1;
+	T0_MR0 = time;
 	open_timer();
 	_handler = handler;
-	T0_MR0 = time;
-	T0_MCR |= 1;
 }
 
-void set_timer_from_now(uint32_t time,Timer_Closure handler) {
-	set_timer(get_timer_clock() + time, handler);
+void reset_timer() {
+	start_timer();
+}
+
+void should_not_reset_timer() {
+	T0_MCR &= ~(1 << 1);
+}
+
+void set_timer_from_now(uint32_t time,Timer_Closure handler, uint8_t reset) {
+	set_timer(get_timer_clock() + time, handler, reset);
 }
 
 uint32_t get_timer_clock() {
@@ -147,7 +156,7 @@ void TIMER0_IRQHandler(void) {
 	if(T0_IR_MR0) {	 // Interrumpio por match 0 ?
 		T0_MCR &= ~(1);
 		T0_IR |= 0x01;
-		_handler();
+		if (_handler) _handler();
 	}
 }
 

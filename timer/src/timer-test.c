@@ -19,35 +19,42 @@
 #include "headers/PR_timer.h"
 
 uint32_t times[6];
+uint8_t cron;
+uint8_t cron2;
+uint8_t cron3;
 
 void step1() {
-	times[1] = get_clock();
+	times[1] = stopCronometerInBase(cron, MILLISECONDS);
 }
 
 void step3() {
-	times[3] = get_clock();
+	times[3] = stopCronometerInBase(cron2,MILLISECONDS);
 }
 
 void step5() {
-	times[5] = get_clock();
-	close_timer();
-	printf("step\n0: %ius\n1: %ius\n2: %ius\n3: %ius\n4: %ius\n5: %ius\n", times[0], times[1], times[2], times[3], times[4], times[5]);
+	times[5] = stopCronometerInBase(cron, MICROSECONDS);
+	printf("step\n0: %ims\n1: %ims\n2: %ims\n3: %ims\n4: %ims\n5: %ius\n", times[0], times[1], times[2], times[3], times[4], times[5]);
 }
 
 void step4() {
-	times[4] = get_clock();
+	times[4] = stopCronometerInBase(cron3, MILLISECONDS);
+	cron = startCronometer();
     startTimer(10, step5, MICROSECONDS);
 }
 
 void step2() {
-	times[2] = get_clock();
+	times[2] = stopCronometerInBase(cron2, MILLISECONDS);
+	cron2 = startCronometer();
     startTimer(1, step3, SECONDS);
+    cron3 = startCronometer();
     startTimer(4, step4, SECONDS);
 }
 
 void step0() {
-	times[0] = get_clock();
-    startTimer(5, step1, SECONDS);
+	times[0] = stopCronometerInBase(cron, MILLISECONDS);
+	cron = startCronometer();
+	startTimer(5, step1, SECONDS);
+	cron2 = startCronometer();
     startTimer(2, step2, SECONDS);
 }
 
@@ -57,9 +64,8 @@ int main(void) {
 
     printf("Hola Mundo!!\n");
 
-    uint32_t init_time =  get_clock();
+    cron = startCronometer();
     startTimer(1, step0, SECONDS);
-    printf("Pasaron %ius\n", init_time);
 
     // Force the counter to be placed into memory
     volatile static int i = 0 ;

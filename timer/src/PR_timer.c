@@ -12,32 +12,26 @@
 #define MILLISECOND 1000
 #define SECOND 1000*1000
 
-#define MAX (uint32_t)0xffffff
-
 #define TIMERS_MAX_SIZE 10
-#define NO_NEXT TIMERS_MAX_SIZE + 1
-
-#define CLOSED 1
-#define OPENED 0
-
-#define ZERO 0
 
 #define PROCESS_TIME 8
+
+#define RESET 1
+#define NO_RESET 0
 
 typedef struct pr_timer{
 	uint32_t time;
 	Timer_Closure handler;
-	uint8_t base;
-	uint8_t closed;
-	uint8_t next;
+	struct pr_timer* next;
 }pr_timer_t;
 
 pr_timer_t timers[TIMERS_MAX_SIZE];
+pr_timer_t* first_timer = NULL;
 uint8_t current_descriptor = 0;
-uint32_t last_time = 0;
-uint8_t next_timer_descriptor = 0;
-uint8_t next_timer = NO_NEXT;
-uint8_t init_state = CLOSED;
+uint8_t timer_counter = 0;
+
+uint32_t cronometers[TIMERS_MAX_SIZE];
+uint8_t cronometer_descriptor = 0;
 
 void timer_handler_function(void);
 
@@ -52,100 +46,95 @@ uint32_t base_to_microseconds(uint8_t base) {
 	return MICROSECOND;
 }
 
+uint8_t startCronometer() {
+	cronometers[cronometer_descriptor] = get_clock();
+	uint8_t descriptor = cronometer_descriptor;
+	cronometer_descriptor = (cronometer_descriptor + 1) % TIMERS_MAX_SIZE;
+	return descriptor;
+}
+
+uint32_t stopCronometer(uint8_t descriptor) {
+	return stopCronometerInBase(descriptor, MICROSECONDS);
+}
+
+uint32_t stopCronometerInBase(uint8_t descriptor, uint8_t base) {
+	uint32_t current_time = get_clock();
+	uint32_t cronometer_time = cronometers[descriptor];
+	return (current_time < cronometer_time
+			? 0xffffffff - cronometer_time + current_time + 1 : current_time - cronometer_time)/base_to_microseconds(base);
+
+}
+
 uint32_t timer_in_microseconds(uint32_t time, uint8_t base) {
 	return time*base_to_microseconds(base);
 }
 
-void init_timer_buffer() {
-	for (uint8_t i = 0; i < TIMERS_MAX_SIZE; i++){
-		pr_timer_t* timer = timers + i;
-		timer->time = 0;
-		timer->handler = empty_handler;
-		timer->base = MICROSECONDS;
-		timer->closed = CLOSED;
-	}
-}
-
 void initTimer() {
-	init_timer_buffer();
 	init_timer();
 }
 
-pr_timer_t initialize_timer(uint8_t descriptor, uint32_t time, Timer_Handler handler , uint8_t base) {
+pr_timer_t* initialize_timer(uint8_t descriptor, uint32_t time, Timer_Handler handler) {
 	pr_timer_t* timer = timers + descriptor;
-	timer->time = timer_in_microseconds(time, base);
+	timer->time = time;
 	timer->handler = handler;
-	timer->base = base;
-	timer->closed = OPENED;
-	return *timer;
+	return timer;
 }
 
-uint8_t modify_timers(uint32_t current_time, uint32_t last_time, uint8_t ignore) {
-	uint32_t time = current_time - last_time;
-	uint32_t min_timer = MAX;
-	uint8_t min_index = NO_NEXT;
-	uint32_t second_timer = MAX;
-	uint8_t second_index = NO_NEXT;
-	for (uint8_t i = 0; i < TIMERS_MAX_SIZE; i++) {
-		pr_timer_t* timer = timers + i;
-		if (!timer->closed) {
-			if (i != ignore) timer->time-= time;
-			if (timer->time < min_timer) {
-				second_timer = min_timer;
-				second_index = min_index;
-				min_timer = timer->time;
-				min_index = i;
-			} else if (timer->time < second_timer) {
-				second_timer = timer->time;
-				second_index = i;
-			}
+void set_first_timer(uint32_t time, Timer_Handler handler) {
+	set_timer_from_now(time, timer_handler_function, RESET);
+	pr_timer_t* timer = initialize_timer(current_descriptor, time, handler);
+	timer->next = first_timer;
+	first_timer = timer;
+}
+
+void set_second_timer(uint32_t time, Timer_Handler handler, uint32_t current_time) {
+	should_not_reset_timer();
+	pr_timer_t* timer = initialize_timer(current_descriptor, time + current_time, handler);
+	timer->next = first_timer->next;
+	first_timer->next = timer;
+}
+
+void set_new_timer_on_top(uint32_t time, Timer_Handler handler, uint32_t current_time) {
+	set_timer_from_now(time, timer_handler_function, NO_RESET);
+	pr_timer_t* timer = initialize_timer(current_descriptor, time + current_time, handler);
+	timer->next = first_timer;
+	first_timer = timer;
+}
+
+void set_new_timer(uint32_t time, Timer_Handler handler, uint32_t current_time) {
+	pr_timer_t* timer = initialize_timer(current_descriptor, time + current_time, handler);
+	pr_timer_t* tmp = first_timer;
+	while(tmp->next && tmp->next->time < timer->time) tmp = tmp->next;
+	timer->next = tmp->next;
+	tmp->next = timer;
+
+}
+
+uint8_t startTimer(uint32_t time, Timer_Handler handler , uint8_t base) {
+	uint32_t micro_time = timer_in_microseconds(time, base);
+	uint32_t current_time = get_timer_clock();
+	if (timer_counter == 0) {
+		set_first_timer(micro_time, handler);
+	} else {
+		if (timer_counter == 1 && first_timer->time < micro_time + current_time) {
+			set_second_timer(micro_time, handler, current_time);
+		} else if (first_timer->time >= micro_time + current_time) {
+			set_new_timer_on_top(micro_time, handler, current_time);
+		} else{
+			set_new_timer(micro_time, handler, current_time);
 		}
 	}
-	timers[min_index].next = second_index;
-	return min_index;
-}
-
-uint8_t organize_timers(uint32_t current_time, uint8_t ignore) {
-	uint32_t last_time_tmp = last_time;
-	last_time = current_time;
-	uint8_t next_index = modify_timers(current_time, last_time_tmp, ignore);
-	return next_index;
-}
-
-void activate_next_timer(uint8_t next_descriptor, uint32_t past_time) {
-	next_timer_descriptor = next_descriptor;
-	pr_timer_t timer = timers[next_descriptor];
-	set_timer_from_now(timer.time - past_time - PROCESS_TIME, timer_handler_function);
-}
-
-uint8_t startTimer(uint32_t time, Timer_Handler handler , uint8_t base ) {
-	uint32_t current_time = get_clock();
-	if (init_state == CLOSED) {
-		last_time = current_time;
-		init_state = OPENED;
-	}
-	uint32_t past_time = current_time - last_time;
-	pr_timer_t timer = initialize_timer(current_descriptor, time, handler, base);
-	if (next_timer == NO_NEXT || timer.time < timers[next_timer].time - past_time || timers[next_timer].closed)
-		activate_next_timer(current_descriptor, ZERO);
-	else
-		activate_next_timer(next_timer, past_time);
-	next_timer = organize_timers(current_time, current_descriptor);
-    uint8_t descriptor = current_descriptor;
-    current_descriptor = (current_descriptor + 1) % TIMERS_MAX_SIZE;
-    return descriptor;
+	timer_counter++;
+	uint8_t descriptor = current_descriptor;
+	current_descriptor = (current_descriptor + 1) % TIMERS_MAX_SIZE;
+	return descriptor;
 }
 
 void timer_handler_function() {
-	uint32_t current_time = get_clock();
-	uint32_t past_time = current_time - last_time;
-	pr_timer_t* timer = timers + next_timer_descriptor;
-	timer->closed = CLOSED;
-	next_timer = timer->next;
-	//	uint8_t next_index = organize_timers(last_time + timer->time);
-	if (next_timer != NO_NEXT) {
-		activate_next_timer(next_timer, past_time);
-	}
+	timer_counter--;
+	pr_timer_t* timer = first_timer;
+	first_timer = timer->next;
+	if (timer_counter > 0)
+		set_timer(first_timer->time, timer_handler_function, timer_counter == 1);
 	timer->handler();
-	organize_timers(current_time, NO_NEXT);
 }
