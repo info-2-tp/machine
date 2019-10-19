@@ -17,6 +17,8 @@
 #include <stdio.h>
 #include "headers/DR_timer.h"
 #include "headers/PR_timer.h"
+#include "headers/gpio_starter.h"
+#include <DR_gpio.h>
 
 uint32_t times[6];
 uint8_t cron;
@@ -34,6 +36,7 @@ void step3() {
 void step5() {
 	times[5] = stopCronometerInBase(cron, MICROSECONDS);
 	printf("step\n0: %ims\n1: %ims\n2: %ims\n3: %ims\n4: %ims\n5: %ius\n", times[0], times[1], times[2], times[3], times[4], times[5]);
+	SetPIN(RELAY1, OFF);
 }
 
 void step4() {
@@ -48,6 +51,7 @@ void step2() {
     startTimer(1, step3, SECONDS);
     cron3 = startCronometer();
     startTimer(4, step4, SECONDS);
+    SetPIN(IN1, ON);
 }
 
 void step0() {
@@ -56,22 +60,26 @@ void step0() {
 	startTimer(5, step1, SECONDS);
 	cron2 = startCronometer();
     startTimer(2, step2, SECONDS);
+    SetPIN(IN0, ON);
 }
 
 int main(void) {
 
 	initTimer();
+	init_gpio();
 
     printf("Hola Mundo!!\n");
 
     cron = startCronometer();
     startTimer(1, step0, SECONDS);
 
-    // Force the counter to be placed into memory
-    volatile static int i = 0 ;
-    // Enter an infinite loop, just incrementing a counter
+
     while(1) {
-        i++ ;
+    	uint8_t a = !GetPIN(SW1, ALTO);
+    	uint8_t b = !GetPIN(SW4, ALTO);
+    	if (a) SetPIN(LED1, ON); else SetPIN(LED1, OFF);
+    	if (b) SetPIN(LED8, ON); else SetPIN(LED8, OFF);
+    	if (a && b) SetPIN(LED6, ON); else SetPIN(LED6, OFF);
     }
     return 0 ;
 }
