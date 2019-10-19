@@ -24,8 +24,9 @@
 #define		LED6				0,19
 #define		LED1				1,29
 #define		LED8				1,25
-#define		IN0					1,22
-#define		IN1					1,19
+#define		IN0					1,26
+#define		IN1					4,29
+#define		IN2					2,11
 
 void init_gpio(void);
 

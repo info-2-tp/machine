@@ -75,11 +75,10 @@ int main(void) {
 
 
     while(1) {
-    	uint8_t a = !GetPIN(SW1, ALTO);
-    	uint8_t b = !GetPIN(SW4, ALTO);
-    	if (a) SetPIN(LED1, ON); else SetPIN(LED1, OFF);
-    	if (b) SetPIN(LED8, ON); else SetPIN(LED8, OFF);
-    	if (a && b) SetPIN(LED6, ON); else SetPIN(LED6, OFF);
+    	uint8_t c = !GetPIN(IN2, ALTO);
+       	if (c) SetPIN(LED6, ON); else SetPIN(LED6, OFF);
+
+    	//if (a && b) SetPIN(LED6, ON); else SetPIN(LED6, OFF);
     }
     return 0 ;
 }
