@@ -15,7 +15,7 @@ void init_hc_sr04() {
 	SetDIR( TRIGGER, SALIDA);
 	SetDIR( ECHO, ENTRADA);
 
-	SetMODE(ECHO, NONE);
+	SetMODE(ECHO, PULLUP);
 
 	SetPIN(TRIGGER, OFF);
 }
@@ -26,6 +26,10 @@ void trigger_turn_on() {
 
 void trigger_turn_off() {
 	SetPIN(TRIGGER, OFF);
+}
+
+uint8_t echo_off() {
+	return !GetPIN(ECHO, ALTO);
 }
 
 uint8_t echo_on() {
