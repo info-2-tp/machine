@@ -15,19 +15,6 @@
 #define		RELAY3				0,21
 #define		RELAY4				0,27
 
-#define     SW1                 2,10
-#define     SW4                 0,18
-#define     SW7                 0,11
-#define     SW10                2,13
-#define     SW13                1,26
-
-#define		LED6				0,19
-#define		LED1				1,29
-#define		LED8				1,25
-#define		IN0					1,26
-#define		IN1					4,29
-#define		IN2					2,11
-
 void init_gpio(void);
 
 #endif /* HEADERS_GPIO_STARTER_H_ */
