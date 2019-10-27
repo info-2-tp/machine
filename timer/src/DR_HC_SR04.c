@@ -15,7 +15,7 @@ void init_hc_sr04() {
 	SetDIR( TRIGGER, SALIDA);
 	SetDIR( ECHO, ENTRADA);
 
-	SetMODE(ECHO, PULLUP);
+	SetMODE(ECHO, NONE);
 
 	SetPIN(TRIGGER, OFF);
 }

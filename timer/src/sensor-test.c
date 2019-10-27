@@ -24,9 +24,9 @@
 void init_cycle();
 
 void init_cycle() {
-	distance_t distance_in_cm = getDistance(CM);
-	printf("Distancia: %dcm\n", distance_in_cm);
-	startTimer(1000, init_cycle, MILLISECONDS);
+	distance_t distance_in_cm = getDistance(MM);
+	printf("Distancia: %dmm\n", distance_in_cm);
+	startTimer(1, init_cycle, SECONDS);
 }
 
 int main(void) {
