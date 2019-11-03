@@ -8,7 +8,7 @@
 #define     INIT    0
 #define 	PREPARE	1
 #define 	LOAD	2
-#define 	PARAR	3
+#define 	STOP	3
 #define 	MEASURING	4
 #define 	OBI_WAN_COM	5
 #define 	PREPARE_CUT	6
@@ -26,5 +26,8 @@ void state_machine();
 
 void init_state();
 void prepare_state();
+void load_state();
+void stop_state();
+void measuring_state();
 
 #endif //STATES_MACHINE_STATES_H
