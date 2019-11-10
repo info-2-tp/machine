@@ -110,6 +110,15 @@ void set_new_timer(uint32_t time, Timer_Handler handler, uint32_t current_time) 
 
 }
 
+void fastTimer(uint32_t time, Timer_Closure handler) {
+	set_fast_timer(get_clock() + time, handler);
+}
+
+void wait(uint32_t time) {
+	uint32_t ttl = get_clock() + time;
+	while(get_clock() < ttl);
+}
+
 uint8_t startTimer(uint32_t time, Timer_Handler handler , uint8_t base) {
 	uint32_t micro_time = timer_in_microseconds(time, base);
 	uint32_t current_time = get_timer_clock();

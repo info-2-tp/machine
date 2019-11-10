@@ -15,6 +15,8 @@ void set_timer(uint32_t time,Timer_Closure handler, uint8_t reset);
 
 void set_timer_from_now(uint32_t time,Timer_Closure handler, uint8_t reset);
 
+void set_fast_timer(uint32_t time,Timer_Closure handler);
+
 uint32_t get_timer_clock();
 
 uint32_t get_clock();

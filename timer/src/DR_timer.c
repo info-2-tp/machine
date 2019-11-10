@@ -11,6 +11,7 @@
 #include "headers/DR_timer.h"
 
 Timer_Closure _handler;
+Timer_Closure fast_handler;
 
 void init_pLL () {
 	//Este bloque de codigo habilita el oscilador externo como fuente de clk
@@ -99,6 +100,8 @@ void close_timer() {
 void prepare_interrupts() {
 	T0_MCR |= 3;				// Genera una interrupcion cuando MC0 Matchea,  Resetea el TC cuando MC0 Matchea
 	ISE_TIMER_0; 				// Habilito interrupcion del Timer0 en el vector de interrupciones.
+	T1_MCR |= 1;
+	ISE_TIMER_1;
 }
 
 void start_timer() {
@@ -144,6 +147,14 @@ void set_timer_from_now(uint32_t time,Timer_Closure handler, uint8_t reset) {
 	set_timer(get_timer_clock() + time, handler, reset);
 }
 
+void set_fast_timer(uint32_t time,Timer_Closure handler) {
+	T1_MCR &= ~(1 << 1);
+	T1_MCR |= 1;
+	T1_MR0 = time;
+	T1_TCR |= 1;
+	fast_handler = handler;
+}
+
 uint32_t get_timer_clock() {
 	return TC_0;
 }
@@ -157,6 +168,14 @@ void TIMER0_IRQHandler(void) {
 		T0_MCR &= ~(1);
 		T0_IR |= 0x01;
 		if (_handler) _handler();
+	}
+}
+
+void TIMER1_IRQHandler(void) {
+	if(T1_IR_MR0) {	 // Interrumpio por match 0 ?
+		T1_MCR &= ~(1);
+		T1_IR |= 0x01;
+		if (fast_handler) fast_handler();
 	}
 }
 
